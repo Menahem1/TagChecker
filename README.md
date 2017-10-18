@@ -4,7 +4,7 @@
   <img src="images/Tag Checker-logo.png"/>
 </p>
 
-Tag Checker is a tool developed by the CCoE to check resources tags in AWS accounts and to notify you when a resource is not properly tagged. Tag Checker is designed to delegate to each account owner the ability to define their own tagging convention.
+Tag Checker is a tool developed by the CCoE (Cloud Center of Excellence) to check resources tags in AWS accounts and to notify you when a resource is not properly tagged. Tag Checker is designed to delegate to each account owner the ability to define their own tagging convention.
 
 
 ## Table of contents
@@ -21,6 +21,12 @@ Tag Checker is a tool developed by the CCoE to check resources tags in AWS accou
 </p>
 
 Two lambdas are executed for Tag Checker (Tag Checker & Tag Checker Child).
+
+<p align="center">
+  <img src="images/example-sns-notification.png"/>
+</p>
+
+Example of SNS Notification (Email) for some tag missing
 
 ### Lambda IAM Role (`Lambda-TagChecker`)
 
@@ -46,7 +52,7 @@ Inline policy:
                 "s3:PutObject"
             ],
             "Resource": [
-                "arn:aws:s3:::engie-infra-tagchecker/*"
+                "arn:aws:s3:::put-name-of-bucket/*"
             ]
         },
         {
@@ -54,7 +60,7 @@ Inline policy:
             "Action": [
                 "sts:AssumeRole"
             ],
-            "Resource": "arn:aws:iam::*:role/InfraAccount-DO_NOT_DELETE"
+            "Resource": "arn:aws:iam::*:role/Name-of-assume-role-child-account"
         },
         {
             "Effect": "Allow",
@@ -62,7 +68,7 @@ Inline policy:
                 "lambda:InvokeFunction"
             ],
             "Resource": [
-                "arn:aws:lambda:eu-west-1:782936146634:function:TagChecker-Child"
+                "arn:aws:lambda:eu-west-1:IDAccount:function:TagChecker-Child"
             ]
         }
     ]
@@ -78,8 +84,8 @@ Inline policy:
 * Memory: 128 MB
 * Timeout: 20 Secondes
 * Environment variables
-  * Bucket (value : engie-infra-tagchecker)
-  * RegionName (value : eu-west-1) 
+  * Bucket (value : name-of-your-bucket)
+  * RegionName (value : a-region) 
   * LambdaFunctionName (value : TagChecker-Child)
   * Key (value : accounts/account.json)
 * Triggers:
@@ -95,8 +101,8 @@ Inline policy:
 * Memory: 128 MB
 * Timeout: 5 minutes
 * Environment variables
-  * bucket_region (value : eu-west-1)
-  * bucket_name (value : engie-infra-tagchecker)
+  * bucket_region (value : a-region)
+  * bucket_name (value : name-of-your-bucket)
 * Triggers:
   * CloudWatch Events - Schedule
   * Schedule expression : every 5mn
@@ -106,12 +112,12 @@ Inline policy:
 
 There are different steps in the execution of the process
 
-**1/** TagChecker retrieves the list of accounts to analyze from a JSON document in bucket `engie-infra-tagchecker`. Syntax of the JSON file (`accounts/accounts.json`):
+**1/** TagChecker retrieves the list of accounts to analyze from a JSON document in bucket `name-of-your-bucket`. Syntax of the JSON file (`accounts/accounts.json`):
 
 ```
 [
   "Name Of Account": {
-    "IAMRole":"arn:aws:iam::Account Number:role/InfraAccount-DO_NOT_DELETE",
+    "IAMRole":"arn:aws:iam::Account Number:role/InfraAccount-example",
     "Bucket": "Name of the bucket",
     "Region": "Which region the bucket is located",
     "Key": "key to the JSON of resource to check"
@@ -203,18 +209,18 @@ Example of JSON parameter:
     }
   ],
   "SNSTopic": {
-    "TopicARN": "arn:aws:sns:eu-west-1:483090962619:NotifTagCheck",
+    "TopicARN": "arn:aws:sns:eu-west-1:AccountNumber:NotifTagChecker",
     "Notif": "unique"
   }
 }
 ```
 
-**4/** The child function stores the history of notifications sent in a JSON document that resides in the bucket `engie-infra-tagchecker` with a object key `ACCOUNT-ID.json`. This history is needed to be able to wait `Timeout` minutes before re-sending a notification.
+**4/** The child function stores the history of notifications sent in a JSON document that resides in the bucket `name-of-your-bucket` with a object key `ACCOUNT-ID.json`. This history is needed to be able to wait `Timeout` minutes before re-sending a notification.
 
 ##  II. Configuration
 ### 1. For BU that want to use Tag Checker
 
-**1/Create an IAM role:** In IAM you need to create a new role for cross account access (Provide access between AWS accounts you own) and provide the Account ID of AWS Infra Account (782936146634), then attach the managed policy `ResourceGroupsandTagEditorReadOnlyAccess` to role name `InfraAccount-DO_NOT_DELETE`.
+**1/Create an IAM role:** In IAM you need to create a new role for cross account access (Provide access between AWS accounts you own) and provide the Account ID of AWS Infra Account/Parent, then attach the managed policy `ResourceGroupsandTagEditorReadOnlyAccess` to role name `YourRoleName`.
 
 In the IAM Role add a inline policy to enable the use of S3 and SNS for the lambda
 
@@ -256,3 +262,6 @@ Communicate to the CCoE the name of Bucket, Region, ARN of IAM Role, and key/pat
 ### 2. To add new account in Tag Checker
 
 Add a new entry in the file `accounts/accounts.json` with the information provided by the BU/BE.
+
+### 3. Thanks
+Special Thanks to Nicolas Malaval for his help and advise
