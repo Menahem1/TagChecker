@@ -13,6 +13,7 @@ Tag Checker is a tool developed by the CCoE (Cloud Center of Excellence) to chec
  * [II. Configuration](#ii-configuration)
     * [1. For BU that want to use Tag Checker](#1-for-bu-that-want-to-use-tag-checker)
     * [2. To add new account in Tag Checker](#2-to-add-new-account-in-tag-checker)
+ * [III. Thanks](#iii-thanks)
 
 
 ## I. Architecture and principles
@@ -22,11 +23,13 @@ Tag Checker is a tool developed by the CCoE (Cloud Center of Excellence) to chec
 
 Two lambdas are executed for Tag Checker (Tag Checker & Tag Checker Child).
 
+-
+Example of SNS Notification (Email) for some tag missing
+
 <p align="center">
   <img src="images/example-sns-notification.png"/>
 </p>
 
-Example of SNS Notification (Email) for some tag missing
 
 ### Lambda IAM Role (`Lambda-TagChecker`)
 
@@ -263,5 +266,5 @@ Communicate to the CCoE the name of Bucket, Region, ARN of IAM Role, and key/pat
 
 Add a new entry in the file `accounts/accounts.json` with the information provided by the BU/BE.
 
-### 3. Thanks
+## III. Thanks
 Special Thanks to Nicolas Malaval for his help and advise
