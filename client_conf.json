@@ -1,0 +1,47 @@
+{
+    "Checks": [
+        {
+            "Resources": [
+            	"ec2:volume",
+                "ec2:instance"
+            ],
+            "TagKey": "Application",
+            "TagValue": {
+                "CheckValue": "True",
+                "Type": "Regex",
+                "PossibleValues": [
+                    "^EHS.*$"
+                ]
+            },
+            "Timeout": "1440"
+        },
+        {
+            "Resources": [
+                "*"
+            ],
+            "TagKey": "BE",
+            "TagValue": {
+                "CheckValue": "False"
+            },
+            "Timeout": "1440"
+        },
+        {
+            "Resources": [
+                "*"
+            ],
+            "TagKey": "BU",
+            "TagValue": {
+                "CheckValue": "True",
+                "Type": "Simple",
+                "PossibleValues": [
+                    "EHS"
+                ]
+            },
+            "Timeout": "140"
+        }
+    ],
+    "SNSTopic": {
+        "TopicARN": "arn:aws:sns:eu-west-1:483090962619:NotifTagCheck",
+        "Notif": "allinone"
+    }
+}

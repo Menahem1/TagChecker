@@ -1,0 +1,20 @@
+{
+    "EHS": {
+        "IAMRole": "arn:aws:iam::483090962619:role/InfraAccount-DO_NOT_DELETE",
+        "Bucket": "ehs-tags-metadata",
+        "Region": "eu-west-1",
+        "Key": "check_detail.json"
+    },
+    "Engie-IAM": {
+        "IAMRole": "arn:aws:iam::761346704069:role/InfraAccount-DO_NOT_DELETE",
+        "Bucket": "engie-iam-tags-metadata",
+        "Region": "eu-west-1",
+        "Key": "check_detail.json"
+    },
+    "Engie-Billing": {
+        "IAMRole": "arn:aws:iam::426242714894:role/InfraAccount-DO_NOT_DELETE",
+        "Bucket": "engie-billing-account-metadata",
+        "Region": "eu-west-1",
+        "Key": "account/check_detail.json"
+    }
+}
