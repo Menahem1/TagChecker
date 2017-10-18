@@ -23,7 +23,6 @@ Tag Checker is a tool developed by the CCoE (Cloud Center of Excellence) to chec
 
 Two lambdas are executed for Tag Checker (Tag Checker & Tag Checker Child).
 
--
 Example of SNS Notification (Email) for some tag missing
 
 <p align="center">
