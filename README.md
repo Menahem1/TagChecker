@@ -4,7 +4,7 @@
   <img src="images/Tag Checker-logo.png"/>
 </p>
 
-Tag Checker is a tool developed by the CCoE (Cloud Center of Excellence) to check resources tags in AWS accounts and to notify you when a resource is not properly tagged. Tag Checker is designed to delegate to each account owner the ability to define their own tagging convention.
+Tag Checker is a tool developed by the CCoE (Cloud Center of Excellence) to check resource tags in AWS accounts and to notify you when a resource is not properly tagged. Tag Checker is designed to delegate to each account owner the ability to define their own tagging conventions and requirements.
 
 
 ## Table of contents
@@ -21,9 +21,9 @@ Tag Checker is a tool developed by the CCoE (Cloud Center of Excellence) to chec
   <img src="images/Tag Checker-Schema.png"/>
 </p>
 
-Two lambdas are executed for Tag Checker (Tag Checker & Tag Checker Child).
+Two lambdas are executed for Tag Checker (specifically `Tag Checker` & `Tag Checker Child`).
 
-Example of SNS Notification (Email) for some tag missing
+Example of SNS Notification (Email) for missing tags
 
 <p align="center">
   <img src="images/example-sns-notification.png"/>
@@ -81,10 +81,10 @@ Inline policy:
 
 #### Parent
 * Code: see parent.py
-* Description: Fetch account to check and launch dedicated child lambda
+* Description: Fetch account to check and invoke dedicated child lambda
 * IAM role: Lambda-TagChecker
 * Memory: 128 MB
-* Timeout: 20 Secondes
+* Timeout: 20 Seconds
 * Environment variables
   * Bucket (value : name-of-your-bucket)
   * RegionName (value : a-region) 
@@ -92,7 +92,7 @@ Inline policy:
   * Key (value : accounts/account.json)
 * Triggers:
   * CloudWatch Events - Schedule
-  * Schedule expression : every 5mn
+  * Schedule expression : every 5m
 
 
 #### Child
@@ -107,12 +107,12 @@ Inline policy:
   * bucket_name (value : name-of-your-bucket)
 * Triggers:
   * CloudWatch Events - Schedule
-  * Schedule expression : every 5mn
+  * Schedule expression : every 5m
 
 
 #### How it works
 
-There are different steps in the execution of the process
+This is a multi-step process.
 
 **1/** TagChecker retrieves the list of accounts to analyze from a JSON document in bucket `name-of-your-bucket`. Syntax of the JSON file (`accounts/accounts.json`):
 
@@ -136,9 +136,9 @@ With:
 
 For each entry in the JSON document, the parent Lambda function invokes the child Lambda function and passes the IAMRole, Bucket, Region and Key values to the child function.
 
-**2/** Tag Checker - Child assumes the IAM role passed in the input event (IAMRole) to get temporary credentials and to be able to query the ResourceGroupsTagging API, get a JSON document in the S3 bucket that contains the tagging convention, and to send notifications to a SNS topic.
+**2/** Tag Checker - Child assumes the IAM role passed in the input event (IAMRole) to obtain temporary credentials and be able to query the ResourceGroupsTagging API, get a JSON document in the S3 bucket that contains the tagging convention, and to send notifications to a SNS topic.
 
-**3/** The child function retrieves and parses the JSON document with the tagging convention. Then, it queries the ResourceGroupsTagging API to list all supported resources in the account and their tags. Then it compares the actual tags with the desired tagging convention.
+**3/** The child function retrieves and parses the JSON document with the tagging convention. Then, it queries the ResourceGroupsTagging API to list all supported resources in the account and their tags. Finally, it compares the actual tags with the desired tagging convention.
 
 The JSON document that describes the expected should have the following format:
 
@@ -173,10 +173,10 @@ With:
     * `PossibleValues` is the:
       * list of possible values if `Type` = `Simple` (examples: `["True", "False"]`)
       * list of possible regex patterns if `Type` = `Regex` (examples: `["^BU[0-9]{2}$"]`). You can use a online regex tool to test your regex patterns like http://regexr.com/
-* `Resources`: list of types of resources to check for that tag key and tag value (see `ResourceTypeFilters` in http://boto3.readthedocs.io/en/latest/reference/services/resourcegroupstaggingapi.html#ResourceGroupsTaggingAPI.Client.get_resources). You can enter `*` for all resources supported by ResourceGroupsTagging API, `service:*` for all resources of a service, `service:resource` for a specific type of resource.
-* `Timeout`: Timeout parameter is used to indicate (in minutes) how many time before send a new notification if a notification has already been sent.
+* `Resources`: List of resource types to check for the tag key and value (see `ResourceTypeFilters` in http://boto3.readthedocs.io/en/latest/reference/services/resourcegroupstaggingapi.html#ResourceGroupsTaggingAPI.Client.get_resources). You can enter `*` for all resources supported by ResourceGroupsTagging API, `service:*` for all resources of a service, `service:resource` for a specific type of resource.
+* `Timeout`: Timeout parameter is used to indicate (in minutes) how much time to wait before sending additional notifications if a notification has already been sent.
 * `TopicARN`: ARN of the SNS topic where notifications for improperly tagged resources should be sent.
-* `Notif`: You can define 2 types of notif:
+* `Notif`: You can define 2 types of notifications:
   * `allinone` : will send you one notification with all items that are not correctly tagged
   * `unique` : will send you a notification for only one item that are not matching (so you can receive multiple notifications)
 
@@ -224,7 +224,7 @@ Example of JSON parameter:
 
 **1/Create an IAM role:** In IAM you need to create a new role for cross account access (Provide access between AWS accounts you own) and provide the Account ID of AWS Infra Account/Parent, then attach the managed policy `ResourceGroupsandTagEditorReadOnlyAccess` to role name `YourRoleName`.
 
-In the IAM Role add a inline policy to enable the use of S3 and SNS for the lambda
+In the IAM Role add a inline policy to enable the Lambda function to use S3 and SNS
 
 ```
 
@@ -253,11 +253,11 @@ In the IAM Role add a inline policy to enable the use of S3 and SNS for the lamb
 }
 ```
 
-**2/Create a SNS topic:** Then create a SNS Topic with all the contacts that you want to notify
+**2/Create a SNS topic:** Then create an SNS Topic that references all of the contacts that you want to notify
 
 **3/Define the tagging convention:** If you don't have a bucket S3 for this type of use, create one with that recommanded syntax `name-of-entity-bucket`
 
-Add in the bucket the JSON configuration file that will contain all the parameters that Tag Checker will use for find tag that are not matching.
+Add in the bucket the JSON configuration file that will contain all the parameters that Tag Checker will use to find tagging violations.
 
 Communicate to the CCoE the name of Bucket, Region, ARN of IAM Role, and key/path to file.json
 
